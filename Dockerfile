@@ -4,7 +4,7 @@
 FROM alpine:3.15 as builder
 
 # https://github.com/rui314/mold/releases
-ENV VERSION=v1.0.3
+ENV VERSION=main
 
 # Add unprivileged user
 RUN echo "mold:x:1000:1000:mold:/:" > /etc_passwd
@@ -15,6 +15,9 @@ RUN apk --no-cache add \
         linux-headers \
         cmake \
         clang \
+        clang-static \
+        lld \
+        libstdc++ \
         zlib-dev \
         zlib-static \
         libressl-dev
@@ -23,12 +26,14 @@ RUN git clone --depth 1 --single-branch --branch "${VERSION}" https://github.com
 
 WORKDIR /mold
 
-# Source: https://github.com/eclipse/mosquitto/blob/master/docker/2.0/Dockerfile#L46
+# LDFLAGS source: https://github.com/rui314/mold/blob/main/build-static.sh#L27
 RUN CORES=$(grep -c '^processor' /proc/cpuinfo); \
     export MAKEFLAGS="-j$((CORES+1)) -l${CORES}"; \
     make \
-      CFLAGS="-O3 -static" \
-      LDFLAGS="-static" && \
+      CC=clang \
+      CXX=clang++ \
+      LDFLAGS='-fuse-ld=lld -static -Wl,-u,pthread_rwlock_rdlock -Wl,-u,pthread_rwlock_unlock -Wl,-u,pthread_rwlock_wrlock' \
+      LTO=1 && \
     make install
 
 # 'Install' upx from image since upx isn't available for aarch64 from Alpine
