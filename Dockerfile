@@ -1,10 +1,10 @@
 #######################################################################################################################
 # Build static mold
 #######################################################################################################################
-FROM alpine:3.15 as builder
+FROM alpine:3.16 as builder
 
 # https://github.com/rui314/mold/releases
-ENV VERSION=v1.1
+ENV VERSION=v1.3.0
 
 # Add unprivileged user
 RUN echo "mold:x:1000:1000:mold:/:" > /etc_passwd
