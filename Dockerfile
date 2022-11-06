@@ -4,7 +4,7 @@
 FROM alpine:3.16 as builder
 
 # https://github.com/rui314/mold/releases
-ENV VERSION=v1.4.2
+ENV VERSION=v1.6.0
 
 # Add unprivileged user
 RUN echo "mold:x:1000:1000:mold:/:" > /etc_passwd
@@ -26,7 +26,7 @@ RUN git clone --depth 1 --single-branch --branch "${VERSION}" https://github.com
 
 WORKDIR /mold
 
-# LDFLAGS source: https://github.com/rui314/mold/blob/main/build-static.sh#L27
+# LDFLAGS source (removed from main): https://github.com/rui314/mold/blob/v1.0.3/build-static.sh
 RUN CORES=$(grep -c '^processor' /proc/cpuinfo); \
     export MAKEFLAGS="-j$((CORES+1)) -l${CORES}"; \
     make \
