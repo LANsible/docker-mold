@@ -4,6 +4,6 @@ on:
 
 jobs:
   docker:
-    uses: LANsible/github-workflows/docker-build.yml@wip
+    uses: LANsible/github-workflows/.github/workflows/docker-build.yml@wip
     with:
       image_name: lansible/mold
