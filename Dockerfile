@@ -4,7 +4,7 @@
 FROM alpine:3.16 as builder
 
 # https://github.com/rui314/mold/releases
-ENV VERSION=v1.6.0
+ENV VERSION=v1.7.1
 
 # Add unprivileged user
 RUN echo "mold:x:1000:1000:mold:/:" > /etc_passwd
