@@ -1,14 +1,17 @@
+FROM lansible/upx:latest as upx
+
 #######################################################################################################################
 # Build static mold
 #######################################################################################################################
-FROM alpine:3.16 as builder
+FROM alpine:3.17 as builder
 
 # https://github.com/rui314/mold/releases
-ENV VERSION=v1.7.1
+ENV VERSION=v1.10.1
 
 # Add unprivileged user
 RUN echo "mold:x:1000:1000:mold:/:" > /etc_passwd
 
+# hadolint ignore=DL3018
 RUN apk --no-cache add \
         git \
         build-base \
@@ -24,20 +27,14 @@ RUN apk --no-cache add \
 
 RUN git clone --depth 1 --single-branch --branch "${VERSION}" https://github.com/rui314/mold.git /mold
 
-WORKDIR /mold
+WORKDIR /mold/build
 
-# LDFLAGS source (removed from main): https://github.com/rui314/mold/blob/v1.0.3/build-static.sh
-RUN CORES=$(grep -c '^processor' /proc/cpuinfo); \
-    export MAKEFLAGS="-j$((CORES+1)) -l${CORES}"; \
-    make \
-      CC=clang \
-      CXX=clang++ \
-      LDFLAGS='-fuse-ld=lld -static -Wl,-u,pthread_rwlock_rdlock -Wl,-u,pthread_rwlock_unlock -Wl,-u,pthread_rwlock_wrlock' \
-      LTO=1 && \
-    make install
+RUN cmake -DCMAKE_BUILD_TYPE=Release -DMOLD_MOSTLY_STATIC=true .. && \
+  cmake --build . -j "$(nproc)" && \
+  cmake --install .
 
 # 'Install' upx from image since upx isn't available for aarch64 from Alpine
-COPY --from=lansible/upx /usr/bin/upx /usr/bin/upx
+COPY --from=upx /usr/bin/upx /usr/bin/upx
 # Minify binaries
 # No upx: 16.3M
 # upx: 4.8M
