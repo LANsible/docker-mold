@@ -6,7 +6,7 @@ FROM lansible/upx:latest as upx
 FROM alpine:3.17 as builder
 
 # https://github.com/rui314/mold/releases
-ENV VERSION=v1.10.1
+ENV VERSION=v1.11.0
 
 # Add unprivileged user
 RUN echo "mold:x:1000:1000:mold:/:" > /etc_passwd
